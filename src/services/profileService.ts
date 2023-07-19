@@ -63,11 +63,11 @@ export const acceptFriendship = async (id: string): Promise<string> => {
     if (err instanceof AxiosError) {
       const errorResponse: AxiosResponse | undefined = err.response;
       const errorMessage: string =
-        errorResponse?.data?.message || 'Problema ao adicionar';
+        errorResponse?.data?.message || 'Problema ao aceitar';
 
       throw new Error(errorMessage);
     }
-    throw new Error('Problema ao adicionar');
+    throw new Error('Problema ao aceitar');
   }
 };
 
@@ -85,10 +85,10 @@ export const declineFriendship = async (id: string): Promise<string> => {
     if (err instanceof AxiosError) {
       const errorResponse: AxiosResponse | undefined = err.response;
       const errorMessage: string =
-        errorResponse?.data?.message || 'Problema ao adicionar';
+        errorResponse?.data?.message || 'Problema ao recusar';
 
       throw new Error(errorMessage);
     }
-    throw new Error('Problema ao adicionar');
+    throw new Error('Problema ao recusar');
   }
 };

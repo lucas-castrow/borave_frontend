@@ -3,7 +3,7 @@ import {StyleSheet, View, Text, TouchableHighlight, Image} from 'react-native';
 import {Card, IconButton} from 'react-native-paper';
 import FastImage from 'react-native-fast-image';
 import {Colors} from '../utils/Colors';
-import {acceptFriendship} from '../services/profileService';
+import {acceptFriendship, declineFriendship} from '../services/profileService';
 
 interface FriendRequestItemProps {
   id: string;
