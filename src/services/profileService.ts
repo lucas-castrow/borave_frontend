@@ -1,16 +1,15 @@
 import api from '../utils/api';
 import {AxiosResponse, AxiosError} from 'axios';
 import {retrieveProfile} from './authService';
+import {useAppDispatch} from '../app/hooks';
+import {removeFriendRequestById} from '../app/reducers/friendReducer';
 
 export const addFriend = async (friendUsername: string): Promise<string> => {
   try {
     const profile = await retrieveProfile();
     const myId = profile.profile.id;
     const url = `/profile/addFriend/${myId}/${friendUsername}`;
-    const headers = {
-      Authorization: `Bearer ${profile.token}`,
-    };
-    const response: AxiosResponse = await api.post(url, {}, {headers});
+    const response: AxiosResponse = await api.post(url, {});
     return response.data.message;
   } catch (err) {
     if (err instanceof AxiosError) {
@@ -24,18 +23,15 @@ export const addFriend = async (friendUsername: string): Promise<string> => {
   }
 };
 
-export const getFriendsRequests = async (): Promise<any> => {
+export const getFriendRequests = async (): Promise<any> => {
   try {
     const profile = await retrieveProfile();
     const myId = profile.profile.id;
     const url = `/profile/friendsRequests/${myId}`;
-    console.log(url);
-    console.log(profile.token);
     const headers = {
       Authorization: `Bearer ${profile.token}`,
     };
     const response: AxiosResponse = await api.get(url, {headers});
-    console.log(response.data);
     return response.data.data;
   } catch (err) {
     if (err instanceof AxiosError) {
@@ -49,15 +45,16 @@ export const getFriendsRequests = async (): Promise<any> => {
   }
 };
 
-export const acceptFriendship = async (id: string): Promise<string> => {
+export const acceptFriendship = async (
+  dispatch: any,
+  id: string,
+): Promise<string> => {
   try {
     const profile = await retrieveProfile();
     const myId = profile.profile.id;
     const url = `/profile/acceptFriendship/${myId}/${id}`;
-    const headers = {
-      Authorization: `Bearer ${profile.token}`,
-    };
-    const response: AxiosResponse = await api.post(url, {}, {headers});
+    const response: AxiosResponse = await api.post(url, {});
+    dispatch(removeFriendRequestById(id));
     return response.data.message;
   } catch (err) {
     if (err instanceof AxiosError) {
@@ -71,15 +68,16 @@ export const acceptFriendship = async (id: string): Promise<string> => {
   }
 };
 
-export const declineFriendship = async (id: string): Promise<string> => {
+export const declineFriendship = async (
+  dispatch: any,
+  id: string,
+): Promise<string> => {
   try {
     const profile = await retrieveProfile();
     const myId = profile.profile.id;
     const url = `/profile/declineFriendship/${myId}/${id}`;
-    const headers = {
-      Authorization: `Bearer ${profile.token}`,
-    };
-    const response: AxiosResponse = await api.post(url, {}, {headers});
+    const response: AxiosResponse = await api.post(url, {});
+    dispatch(removeFriendRequestById(id));
     return response.data.message;
   } catch (err) {
     if (err instanceof AxiosError) {

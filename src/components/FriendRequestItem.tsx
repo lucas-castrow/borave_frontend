@@ -1,9 +1,10 @@
 import React from 'react';
-import {StyleSheet, View, Text, TouchableHighlight, Image} from 'react-native';
+import {StyleSheet, View, Text, TouchableHighlight} from 'react-native';
 import {Card, IconButton} from 'react-native-paper';
 import FastImage from 'react-native-fast-image';
 import {Colors} from '../utils/Colors';
 import {acceptFriendship, declineFriendship} from '../services/profileService';
+import {useAppDispatch} from '../app/hooks';
 
 interface FriendRequestItemProps {
   id: string;
@@ -18,13 +19,14 @@ export function FriendRequestItem({
   name,
   photo,
 }: FriendRequestItemProps) {
+  const dispatch = useAppDispatch();
   const openProfilePhoto = () => {
     console.log('Abriu foto de perfil de amigo');
   };
 
   const handleAcceptRequest = async () => {
     try {
-      const response = await acceptFriendship(id);
+      const response = await acceptFriendship(dispatch, id);
       console.log(response);
     } catch (err) {
       if (err instanceof Error) {
@@ -35,7 +37,7 @@ export function FriendRequestItem({
   };
   const handleDeclineRequest = async () => {
     try {
-      const response = await declineFriendship(id);
+      const response = await declineFriendship(dispatch, id);
       console.log(response);
     } catch (err) {
       if (err instanceof Error) {
@@ -73,7 +75,7 @@ export function FriendRequestItem({
               icon="close"
               iconColor={Colors.buttons.error}
               size={25}
-              onPress={() => console.log('Friend not accepted')}
+              onPress={handleDeclineRequest}
             />
 
             <IconButton

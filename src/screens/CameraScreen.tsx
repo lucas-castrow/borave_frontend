@@ -1,5 +1,7 @@
-import React, {useEffect, useRef, useState} from 'react';
+import {useIsFocused, useNavigation} from '@react-navigation/native';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
+  BackHandler,
   Linking,
   StyleSheet,
   Text,
@@ -9,20 +11,49 @@ import {
 import {IconButton} from 'react-native-paper';
 import {
   Camera,
+  CameraCaptureError,
   CameraPosition,
   useCameraDevices,
 } from 'react-native-vision-camera';
-
+import {RootTabParamList} from '../routes/RootStackParams';
+import {MaterialTopTabNavigationProp} from '@react-navigation/material-top-tabs';
+import FastImage from 'react-native-fast-image';
+import {SendButton} from '../components/buttons/SendButton';
+import {Colors} from '../utils/Colors';
+type CameraScreenProp = MaterialTopTabNavigationProp<
+  RootTabParamList,
+  'Camera'
+>;
 export function CameraScreen() {
-  const camera = useRef(null);
+  const navigation = useNavigation<CameraScreenProp>();
+  const camera = useRef<Camera>(null);
   const devices = useCameraDevices();
 
-  const [showCamera, setShowCamera] = useState<boolean>(true);
   const [cameraPosition, setCameraPosition] = useState<CameraPosition>('back');
   const [imageSource, setImageSource] = useState<string>('');
+  const [showPhoto, setShowPhoto] = useState<boolean>(false);
   const [isFlashOn, setIsFlashOn] = useState<boolean>(false);
+  const isFocused = useIsFocused();
   const device = cameraPosition === 'front' ? devices.front : devices.back;
 
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => {
+        navigation.navigate('Message');
+        return true;
+      },
+    );
+    return () => backHandler.remove();
+  }, [navigation]);
+  function handleCloseCamera() {
+    if (showPhoto) {
+      setShowPhoto(false);
+      setImageSource('');
+      return true;
+    }
+    navigation.navigate('Message');
+  }
   useEffect(() => {
     async function getPermission() {
       const permission = await Camera.requestCameraPermission();
@@ -32,16 +63,32 @@ export function CameraScreen() {
       }
     }
     getPermission();
-    setShowCamera(true);
   }, []);
-  // const capturePhoto = async () => {
-  //   if (camera.current !== null) {
-  //     const photo = await camera.current.takePhoto({});
-  //     setImageSource(photo.path);
-  //     setShowCamera(false);
-  //     console.log(photo.path);
-  //   }
-  // };
+
+  const onPress = useCallback(async () => {
+    try {
+      if (camera.current != null) {
+        const photo = await camera.current.takePhoto({
+          qualityPrioritization: 'balanced',
+          enableAutoDistortionCorrection: true,
+          flash: isFlashOn ? 'on' : 'off',
+        });
+        setImageSource(photo.path);
+        setShowPhoto(true);
+      }
+    } catch (e) {
+      if (e instanceof CameraCaptureError) {
+        switch (e.code) {
+          case 'capture/file-io-error':
+            console.error('Failed to write photo to disk!');
+            break;
+          default:
+            console.error(e);
+            break;
+        }
+      }
+    }
+  }, [camera, isFlashOn]);
   function handleCameraPosition() {
     setCameraPosition(prevState => (prevState === 'front' ? 'back' : 'front'));
   }
@@ -56,33 +103,58 @@ export function CameraScreen() {
 
   return (
     <View style={styles.container}>
-      <Camera
-        ref={camera}
-        style={styles.camera}
-        device={device}
-        isActive={true}
-        torch={isFlashOn ? 'on' : 'off'}
-        photo={true}
-      />
+      <View style={styles.topButtons}>
+        <IconButton
+          iconColor="white"
+          icon={'window-close'}
+          size={35}
+          onPress={handleCloseCamera}
+        />
+      </View>
+      {!showPhoto ? (
+        <Camera
+          ref={camera}
+          style={styles.camera}
+          device={device}
+          isActive={isFocused}
+          enableZoomGesture={true}
+          photo={true}
+        />
+      ) : (
+        <FastImage
+          style={styles.camera}
+          source={{uri: 'file://' + imageSource}}
+        />
+      )}
 
       <View style={styles.content}>
         <View style={styles.buttonsContainer}>
-          <IconButton
-            iconColor="#fff"
-            icon={isFlashOn ? 'flash' : 'flash-off'}
-            size={30}
-            onPress={handleToggleFlash}
-          />
-          <TouchableWithoutFeedback
-            onPress={() => console.log('Botão pressionado!')}>
-            <View style={styles.takePhoto} />
-          </TouchableWithoutFeedback>
-          <IconButton
-            iconColor="#fff"
-            icon="camera-flip"
-            size={30}
-            onPress={handleCameraPosition}
-          />
+          {!showPhoto ? (
+            <>
+              <IconButton
+                iconColor="#fff"
+                icon="camera-flip"
+                size={30}
+                onPress={handleCameraPosition}
+              />
+              <TouchableWithoutFeedback onPress={onPress}>
+                <View style={styles.takePhoto} />
+              </TouchableWithoutFeedback>
+
+              <IconButton
+                iconColor="#fff"
+                icon={isFlashOn ? 'flash' : 'flash-off'}
+                size={30}
+                onPress={handleToggleFlash}
+              />
+            </>
+          ) : (
+            <SendButton
+              size={60}
+              color={Colors.white}
+              backgroundColor={Colors.secondary}
+            />
+          )}
         </View>
       </View>
     </View>
@@ -112,7 +184,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonsContainer: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '100%',
@@ -129,5 +201,13 @@ const styles = StyleSheet.create({
   },
   buttonContent: {
     borderWidth: 0,
+  },
+  topButtons: {
+    position: 'absolute',
+    zIndex: 2,
+    top: 3,
+    left: 3,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });

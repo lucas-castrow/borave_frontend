@@ -5,3 +5,9 @@ export type RootStackParamList = {
   FriendRequests: undefined;
   Splash: undefined;
 };
+
+export type RootTabParamList = {
+  Camera: undefined;
+  Message: undefined;
+  Profile: undefined;
+};

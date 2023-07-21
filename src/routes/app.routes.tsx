@@ -49,6 +49,7 @@ export function Home() {
         component={CameraScreen}
         options={{
           tabBarIcon: ({color}) => IconShow({icon: 'camera', color: color}),
+          swipeEnabled: false,
         }}
       />
       <Tab.Group

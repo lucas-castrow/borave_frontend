@@ -1,33 +1,17 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import {FlatList, View} from 'react-native';
 import Profile from '../components/Profile';
 import {FriendRequestItem} from '../components/FriendRequestItem';
 import {AddFriend} from '../components/AddFriend';
-import {getFriendsRequests} from '../services/profileService';
-
-type ProfileType = {
-  id: string;
-  userId: string;
-  name: string;
-  username: string;
-  photo: string;
-  friends: Array<String>;
-};
+import {useAppDispatch, useAppSelector} from '../app/hooks';
+import {fetchFriendRequests} from '../app/thunks/friendThunks';
 
 export function ProfileScreen() {
-  const [friendRequests, setFriendRequests] = useState<Array<ProfileType>>([]);
-  const fetchData = async () => {
-    try {
-      const data = await getFriendsRequests();
-      console.log(data);
-      setFriendRequests(data);
-    } catch (error) {
-      console.error('Erro ao carregar os dados:', error);
-    }
-  };
+  const dispatch = useAppDispatch();
+  const friendRequests = useAppSelector(state => state.friend.friendsRequests);
   useEffect(() => {
-    fetchData();
-  }, []);
+    dispatch(fetchFriendRequests());
+  }, [dispatch]);
 
   return (
     <View>
