@@ -3,4 +3,5 @@ export type RootStackParamList = {
   SignUp: undefined;
   Home: undefined;
   FriendRequests: undefined;
+  Splash: undefined;
 };

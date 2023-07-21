@@ -70,7 +70,8 @@ export async function retrieveProfile() {
     if (session !== null) {
       return JSON.parse(session).profile;
     }
+    return null;
   } catch (error) {
-    // There was an error on the native side
+    console.warn('Não foi possivel pegar do storage dados do profile');
   }
 }
