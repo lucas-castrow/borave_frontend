@@ -10,7 +10,7 @@ interface FriendRequestItemProps {
   id: string;
   username: string;
   name: string;
-  photo: string;
+  photo: string | null;
 }
 
 export function FriendRequestItem({

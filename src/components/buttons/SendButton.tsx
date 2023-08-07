@@ -6,10 +6,12 @@ export function SendButton({
   size,
   color,
   backgroundColor,
+  action,
 }: {
   size: number;
   color?: string;
   backgroundColor?: string;
+  action: () => void;
 }) {
   const buttonSize: ViewStyle = {
     backgroundColor: color,
@@ -23,6 +25,7 @@ export function SendButton({
         icon={'send-circle'}
         size={size}
         iconColor={backgroundColor}
+        onPress={action}
       />
     </View>
   );

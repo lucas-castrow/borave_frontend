@@ -8,7 +8,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
-import {IconButton} from 'react-native-paper';
+import {IconButton, PaperProvider} from 'react-native-paper';
 import {
   Camera,
   CameraCaptureError,
@@ -20,6 +20,7 @@ import {MaterialTopTabNavigationProp} from '@react-navigation/material-top-tabs'
 import FastImage from 'react-native-fast-image';
 import {SendButton} from '../components/buttons/SendButton';
 import {Colors} from '../utils/Colors';
+import ModalSelectFriends from './ModalSelectFriends';
 type CameraScreenProp = MaterialTopTabNavigationProp<
   RootTabParamList,
   'Camera'
@@ -36,6 +37,11 @@ export function CameraScreen() {
   const isFocused = useIsFocused();
   const device = cameraPosition === 'front' ? devices.front : devices.back;
 
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const showModal = () => setModalVisible(true);
+  const hideModal = () => setModalVisible(false);
+
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
       'hardwareBackPress',
@@ -46,6 +52,13 @@ export function CameraScreen() {
     );
     return () => backHandler.remove();
   }, [navigation]);
+  function handleBackAfterPost() {
+    if (showPhoto) {
+      setShowPhoto(false);
+      setImageSource('');
+    }
+    navigation.navigate('Message');
+  }
   function handleCloseCamera() {
     if (showPhoto) {
       setShowPhoto(false);
@@ -102,62 +115,70 @@ export function CameraScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.topButtons}>
-        <IconButton
-          iconColor="white"
-          icon={'window-close'}
-          size={35}
-          onPress={handleCloseCamera}
-        />
-      </View>
-      {!showPhoto ? (
-        <Camera
-          ref={camera}
-          style={styles.camera}
-          device={device}
-          isActive={isFocused}
-          enableZoomGesture={true}
-          photo={true}
-        />
-      ) : (
-        <FastImage
-          style={styles.camera}
-          source={{uri: 'file://' + imageSource}}
-        />
-      )}
-
-      <View style={styles.content}>
-        <View style={styles.buttonsContainer}>
-          {!showPhoto ? (
-            <>
-              <IconButton
-                iconColor="#fff"
-                icon="camera-flip"
-                size={30}
-                onPress={handleCameraPosition}
-              />
-              <TouchableWithoutFeedback onPress={onPress}>
-                <View style={styles.takePhoto} />
-              </TouchableWithoutFeedback>
-
-              <IconButton
-                iconColor="#fff"
-                icon={isFlashOn ? 'flash' : 'flash-off'}
-                size={30}
-                onPress={handleToggleFlash}
-              />
-            </>
-          ) : (
-            <SendButton
-              size={60}
-              color={Colors.white}
-              backgroundColor={Colors.secondary}
-            />
-          )}
+    <PaperProvider>
+      <View style={styles.container}>
+        <View style={styles.topButtons}>
+          <IconButton
+            iconColor="white"
+            icon={'window-close'}
+            size={35}
+            onPress={handleCloseCamera}
+          />
         </View>
+        {!showPhoto ? (
+          <Camera
+            ref={camera}
+            style={styles.camera}
+            device={device}
+            isActive={isFocused}
+            enableZoomGesture={true}
+            photo={true}
+          />
+        ) : (
+          <FastImage
+            style={styles.camera}
+            source={{uri: 'file://' + imageSource}}
+          />
+        )}
+
+        <View style={styles.content}>
+          <View style={styles.buttonsContainer}>
+            {!showPhoto ? (
+              <>
+                <IconButton
+                  iconColor="#fff"
+                  icon="camera-flip"
+                  size={30}
+                  onPress={handleCameraPosition}
+                />
+                <TouchableWithoutFeedback onPress={onPress}>
+                  <View style={styles.takePhoto} />
+                </TouchableWithoutFeedback>
+
+                <IconButton
+                  iconColor="#fff"
+                  icon={isFlashOn ? 'flash' : 'flash-off'}
+                  size={30}
+                  onPress={handleToggleFlash}
+                />
+              </>
+            ) : (
+              <SendButton
+                size={60}
+                color={Colors.white}
+                backgroundColor={Colors.secondary}
+                action={showModal}
+              />
+            )}
+          </View>
+        </View>
+        <ModalSelectFriends
+          visible={modalVisible}
+          hideModal={hideModal}
+          handleBackAfterPost={handleBackAfterPost}
+        />
       </View>
-    </View>
+    </PaperProvider>
   );
 }
 

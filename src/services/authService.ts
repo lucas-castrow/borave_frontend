@@ -75,3 +75,14 @@ export async function retrieveProfile() {
     console.warn('Não foi possivel pegar do storage dados do profile');
   }
 }
+export async function updateTokenInStorage(newToken: string) {
+  const profile = await retrieveProfile();
+  profile.token = newToken;
+
+  await EncryptedStorage.setItem(
+    'user_token',
+    JSON.stringify({
+      profile: profile,
+    }),
+  );
+}

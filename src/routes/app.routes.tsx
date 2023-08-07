@@ -21,9 +21,6 @@ const Tab = createMaterialTopTabNavigator();
 const screenOptions: StackNavigationOptions = {
   headerShown: false,
 };
-const CameraIcon = ({color}: {color: string}) => (
-  <Icon name="camera" color={color} size={24} />
-);
 
 function IconShow(props: {
   icon: string;

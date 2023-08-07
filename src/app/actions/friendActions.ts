@@ -1,6 +1,3 @@
-// friendActions.ts
-// Actions relacionadas às solicitações de amizade
-
 import {createAction} from '@reduxjs/toolkit';
 
 export const fetchFriendRequests = createAction<void>(
