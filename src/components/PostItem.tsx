@@ -9,7 +9,7 @@ interface PostItemProps {
   username: string;
   sendAt: Date;
   senderPhoto: string;
-  content;
+  content: Array<string>;
   friendLevelStories: number;
 }
 
@@ -26,15 +26,14 @@ export function PostItem({
   const openProfilePhoto = () => {
     console.log('Abriu foto de perfil de amigo');
   };
-
   const calculateRemainingHours = () => {
-    const now = new Date(); // Tempo atual
+    const now = new Date();
     const differenceInMilliseconds: number =
-      now.getTime() - moment(sendAt).toDate().getTime(); // Diferença em milissegundos
+      now.getTime() - moment(sendAt).toDate().getTime();
     const elapsedHours = Math.floor(
       differenceInMilliseconds / (1000 * 60 * 60),
-    ); // Horas decorridas desde sendAt
-    const remainingHours = 24 - elapsedHours; // Horas restantes até completar 24 horas
+    );
+    const remainingHours = 24 - elapsedHours;
 
     return remainingHours;
   };

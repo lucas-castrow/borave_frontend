@@ -9,7 +9,7 @@ const getHeaders = async () => {
 
   if (profile && profile.token) {
     headers.Authorization = `Bearer ${profile.token}`;
-    headers.user = `User ${profile.userId}`;
+    headers.user = `User ${profile.profile.userId}`;
   }
   return headers;
 };

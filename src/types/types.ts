@@ -10,7 +10,7 @@ export type PostType = {
   id: string;
   postedBy: string;
   postedUsername: string;
-  content: Array<String>;
+  content: Array<string>;
   sendAt: Date;
   senderPhoto: string;
   friendLevelStories: number;

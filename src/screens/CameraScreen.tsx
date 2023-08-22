@@ -173,6 +173,7 @@ export function CameraScreen() {
           </View>
         </View>
         <ModalSelectFriends
+          imageSource={imageSource}
           visible={modalVisible}
           hideModal={hideModal}
           handleBackAfterPost={handleBackAfterPost}

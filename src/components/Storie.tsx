@@ -1,6 +1,5 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
-  Image,
   StyleSheet,
   Modal,
   View,
@@ -9,6 +8,8 @@ import {
 } from 'react-native';
 import {Colors} from '../utils/Colors';
 import {IconButton} from 'react-native-paper';
+import {bucketName, s3} from '../utils/aws-exports';
+import FastImage from 'react-native-fast-image';
 
 interface StorieProps {
   contents: Array<string>;
@@ -18,11 +19,41 @@ interface StorieProps {
 
 const Storie: React.FC<StorieProps> = ({contents, visible, hideModal}) => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [storieUrls, setStorieUrls] = useState<string[]>([]);
+  const [nextImageLoading, setNextImageLoading] = useState<boolean>(false);
 
+  const handleNextImageLoadStart = () => {
+    setNextImageLoading(true);
+  };
+
+  const handleNextImageLoadEnd = () => {
+    setNextImageLoading(false);
+  };
+  useEffect(() => {
+    const generatePresignedUrl = async (imageKey: string) => {
+      const params = {
+        Bucket: bucketName,
+        Key: imageKey,
+        Expires: 3600,
+      };
+
+      const url = await s3.getSignedUrlPromise('getObject', params);
+      return url;
+    };
+
+    const fetchUrls = async () => {
+      const urls = await Promise.all(
+        contents.map((imageKey: string) => generatePresignedUrl(imageKey)),
+      );
+      setStorieUrls(urls);
+    };
+
+    fetchUrls();
+  }, [contents]);
   const handleNextPost = () => {
-    if (currentIndex < contents.length - 1) {
+    if (!nextImageLoading && currentIndex < storieUrls.length - 1) {
       setCurrentIndex(currentIndex + 1);
-    } else {
+    } else if (currentIndex === storieUrls.length - 1) {
       hideModal();
     }
   };
@@ -35,22 +66,26 @@ const Storie: React.FC<StorieProps> = ({contents, visible, hideModal}) => {
       onRequestClose={hideModal}>
       <TouchableWithoutFeedback onPress={handleNextPost}>
         <View style={styles.container}>
-          <Image
-            source={{uri: contents[currentIndex]}}
+          <FastImage
+            source={{uri: storieUrls[currentIndex]}}
             style={styles.storieImage}
+            onLoadStart={handleNextImageLoadStart}
+            onLoadEnd={handleNextImageLoadEnd}
           />
           <View style={styles.btnNext}>
             <View style={styles.btnNextInner}>
               <Text style={styles.btnNextText}>
-                {currentIndex + 1}/{contents.length}
+                {currentIndex + 1}/{storieUrls.length}
               </Text>
-              <IconButton
-                icon="arrow-right-bold-box"
-                iconColor={Colors.secondary}
-                size={35}
-                onPress={handleNextPost}
-                disabled={currentIndex === contents.length - 1}
-              />
+              {storieUrls.length > 0 ? (
+                <IconButton
+                  icon="arrow-right-bold-box"
+                  iconColor={Colors.secondary}
+                  size={35}
+                  onPress={handleNextPost}
+                  disabled={currentIndex === storieUrls.length - 1}
+                />
+              ) : null}
             </View>
           </View>
         </View>

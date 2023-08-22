@@ -14,15 +14,17 @@ import {FriendListCheck} from '../components/FriendListCheck';
 import FooterButton from '../components/FooterButton';
 import {useAppDispatch, useAppSelector} from '../app/hooks';
 import {fetchFriends} from '../app/thunks/friendThunks';
-import {sendPost} from '../services/postService';
 
+import {bucketName, s3} from '../utils/aws-exports';
+import {sendPost} from '../services/postService';
 interface ModalSelectFriendsProps {
+  imageSource: string;
   visible: boolean;
   hideModal: () => void;
   handleBackAfterPost: () => void;
 }
-
 const ModalSelectFriends: React.FC<ModalSelectFriendsProps> = ({
+  imageSource,
   visible,
   hideModal,
   handleBackAfterPost,
@@ -33,7 +35,6 @@ const ModalSelectFriends: React.FC<ModalSelectFriendsProps> = ({
   const friends = useAppSelector(state => state.friend.friends);
   const [filteredData, setFilteredData] = useState<ProfileType[]>(friends);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-
   useEffect(() => {
     dispatch(fetchFriends());
   }, [dispatch]);
@@ -65,10 +66,10 @@ const ModalSelectFriends: React.FC<ModalSelectFriendsProps> = ({
   };
   const handleSendButton = async () => {
     try {
-      const response = await sendPost(
-        'https://dw0i2gv3d32l1.cloudfront.net/uploads/stage/stage_image/63833/optimized_large_thumb_stage.jpg',
-        selectedIds,
-      );
+      const key = await uploadFileToS3();
+      if (key != null) {
+        await sendPost(key, selectedIds);
+      }
       hideModal();
       handleBackAfterPost();
     } catch (err) {
@@ -78,7 +79,27 @@ const ModalSelectFriends: React.FC<ModalSelectFriendsProps> = ({
       }
     }
   };
+  const uploadFileToS3 = async () => {
+    try {
+      const key = `uploads/${Date.now()}.jpg`;
+      const fileData = await fetch('file://' + imageSource);
+      const buffer = await fileData.arrayBuffer();
 
+      const params = {
+        Bucket: bucketName,
+        Key: key,
+        Body: buffer,
+        ContentType: 'image/jpeg',
+        ACL: 'public-read',
+      };
+
+      await s3.upload(params).promise();
+      return key;
+    } catch (error) {
+      console.error('Erro ao enviar o arquivo para o S3:', error);
+      return null;
+    }
+  };
   const isItemSelected = (id: string) => selectedIds.includes(id);
   return (
     <Modal

@@ -10,6 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "^1.19.1",
     "@react-native-community/cli-doctor": "^11.3.4",
     "@react-native-community/masked-view": "^0.1.11",
     "@react-navigation/material-bottom-tabs": "^6.2.16",
@@ -17,6 +18,7 @@
     "@react-navigation/native": "^6.1.7",
     "@react-navigation/stack": "^6.3.17",
     "@reduxjs/toolkit": "^1.9.5",
+    "aws-sdk": "^2.1431.0",
     "axios": "^1.4.0",
     "lottie-react-native": "^5.1.6",
     "moment": "^2.29.4",
